@@ -19,7 +19,10 @@ defmodule Signaturit.Utils do
   def manage_error(msg, nil), do: {:error, msg}
   def manage_error(msg, context), do: {:error, "[#{context}] " <> msg}
 
-  def fill_array(array, params, parent) do
+  def fill_array(array, params, parent) when is_binary(params) do
+    array ++ [{parent, params}]
+  end
+  def fill_array(array, params, parent) when is_map(params) or is_list(params) do
     iterable = if is_map(params), do: Map.to_list(params), else: Enum.with_index(params, fn element, index -> {index, element} end)
     Enum.reduce(iterable, array, fn {key, value}, acc ->
       parent_key = if parent != "", do: "#{parent}[#{key}]", else: "#{key}"
@@ -35,7 +38,7 @@ defmodule Signaturit.Utils do
     end)
   end
 
-  def build_file(file_path, index) do
-    {:file, file_path, {"form-data", [name: "files[#{index}]", filename: Path.basename(file_path)]}, []}
+  def build_file(file_path, key) do
+    {:file, file_path, {"form-data", [name: key, filename: Path.basename(file_path)]}, []}
   end
 end

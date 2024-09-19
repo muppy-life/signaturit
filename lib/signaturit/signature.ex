@@ -64,7 +64,7 @@ defmodule Signaturit.Signature do
         (if is_list(files), do: files, else: List.wrap(files))
         |> Enum.with_index(fn element, index -> {index, element} end)
         |> Enum.reduce([], fn {index, file}, acc ->
-          acc ++ [Utils.build_file(file, index)]
+          acc ++ [Utils.build_file(file, "files[#{index}]")]
         end)
       )
 

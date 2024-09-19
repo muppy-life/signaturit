@@ -20,7 +20,6 @@ defmodule Signaturit.Http do
 
   def post(route, data) do
     with {:ok, data} <- Jason.encode(data),
-      _ <- IO.inspect(data),
       {:ok, %Response{body: res}} <- HTTPoison.post(route, data, headers()),
       {:ok, res} <- Jason.decode(res) do
         case res do
@@ -103,7 +102,24 @@ defmodule Signaturit.Http do
     end
   end
 
-  def endpoint(:signature, endpoint), do: base_url() <> "v3/signatures" <> endpoint
+  @endpoints %{
+    signature: "v3/signatures",
+    files: "v3/files",
+    event_hooks: "v3/event-hooks",
+    templates: "v3/templates",
+    emails: "v3/emails",
+    sms: "v3/sms",
+    brandings: "v3/brandings",
+    photo_id: "v3/photoid",
+    credits: "v3/account/credits",
+    subscriptions: "v3/subscriptions",
+    team: "v3/team",
+    contacts: "v3/contacts"
+  }
+
+  def endpoint(type, endpoint) when is_atom(type) and is_binary(endpoint) do
+    base_url() <> Map.get(@endpoints, type, "") <> endpoint
+  end
   def endpoint(), do: base_url()
 
   def base_url, do: Application.fetch_env!(:signaturit, :url)
