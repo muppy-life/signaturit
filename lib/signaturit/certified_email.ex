@@ -9,14 +9,17 @@ defmodule Signaturit.CertifiedEmail do
           | :document_opened
           | :document_downloaded
           | :certification_completed
+
   @type certificate_event_data() :: %{
           created_at: DateTime.t(),
           type: certificate_event_type()
         }
+
   @type attachment_data() :: %{
           name: String.t(),
           size: integer()
         }
+
   @type certificate_data() :: %{
           email: String.t(),
           events: [certificate_event_data()],
@@ -25,6 +28,7 @@ defmodule Signaturit.CertifiedEmail do
           name: String.t(),
           status: :in_queue | :sent | :error
         }
+
   @type t() :: %__MODULE__{
           created_at: DateTime.t(),
           certificates: [certificate_data()],

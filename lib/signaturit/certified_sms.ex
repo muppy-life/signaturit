@@ -9,20 +9,24 @@ defmodule Signaturit.CertifiedSms do
           | :document_opened
           | :document_downloaded
           | :certification_completed
+
   @type certificate_event_data() :: %{
           created_at: DateTime.t(),
           type: certificate_event_type()
         }
+
   @type certificate_data() :: %{
           phone: String.t(),
           events: [certificate_event_data()],
           status: :in_queue | :sent | :error
         }
+
   @type t() :: %__MODULE__{
           created_at: DateTime.t(),
           id: String.t(),
           certificates: [certificate_data()]
         }
+
   defstruct [
     :created_at,
     :id,
