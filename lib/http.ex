@@ -3,8 +3,8 @@ defmodule Signaturit.Http do
 
   def get(route) do
     with {:ok, %Response{body: res}} <- HTTPoison.get(route, headers()),
-      {:ok, res} <- Jason.decode(res) do
-        {:ok, res}
+         {:ok, res} <- Jason.decode(res) do
+      {:ok, res}
     else
       {:error, msg} -> {:error, msg}
     end
@@ -20,12 +20,12 @@ defmodule Signaturit.Http do
 
   def post(route, data) do
     with {:ok, data} <- Jason.encode(data),
-      {:ok, %Response{body: res}} <- HTTPoison.post(route, data, headers()),
-      {:ok, res} <- Jason.decode(res) do
-        case res do
-          %{"status_code" => _, "message" => msg} -> {:error, msg}
-          _ -> {:ok, res}
-        end
+         {:ok, %Response{body: res}} <- HTTPoison.post(route, data, headers()),
+         {:ok, res} <- Jason.decode(res) do
+      case res do
+        %{"status_code" => _, "message" => msg} -> {:error, msg}
+        _ -> {:ok, res}
+      end
     else
       {:error, msg} -> {:error, msg}
     end
@@ -33,8 +33,8 @@ defmodule Signaturit.Http do
 
   def post_no_response(route, data) do
     with {:ok, data} <- Jason.encode(data),
-      {:ok, %Response{status_code: 202}} <- HTTPoison.post(route, data, headers()) do
-        {:ok, nil}
+         {:ok, %Response{status_code: 202}} <- HTTPoison.post(route, data, headers()) do
+      {:ok, nil}
     else
       {:error, msg} -> {:error, msg}
       {:ok, %Response{status_code: status_code}} -> {:error, "Status code: #{status_code}"}
@@ -43,9 +43,9 @@ defmodule Signaturit.Http do
   end
 
   def upload(route, data) do
-    with {:ok, %Response{body: res}} <- HTTPoison.post(route, {:multipart, data}, headers(:json), [recv_timeout: 40000]),
-         {:ok, res} <- Jason.decode(res)
-    do
+    with {:ok, %Response{body: res}} <-
+           HTTPoison.post(route, {:multipart, data}, headers(:json), recv_timeout: 40000),
+         {:ok, res} <- Jason.decode(res) do
       case res do
         %{"status_code" => _status, "message" => msg} -> {:error, msg}
         _ -> {:ok, res}
@@ -58,12 +58,12 @@ defmodule Signaturit.Http do
 
   def put(route, data) do
     with {:ok, data} <- Jason.encode(data),
-      {:ok, %Response{body: res}} <- HTTPoison.put(route, data, headers()),
-      {:ok, res} <- Jason.decode(res) do
-        case res do
-          %{"status_code" => _, "message" => msg} -> {:error, msg}
-          _ -> {:ok, res}
-        end
+         {:ok, %Response{body: res}} <- HTTPoison.put(route, data, headers()),
+         {:ok, res} <- Jason.decode(res) do
+      case res do
+        %{"status_code" => _, "message" => msg} -> {:error, msg}
+        _ -> {:ok, res}
+      end
     else
       {:error, msg} -> {:error, msg}
     end
@@ -71,31 +71,31 @@ defmodule Signaturit.Http do
 
   def delete(route) do
     with {:ok, %Response{body: res}} <- HTTPoison.delete(route, headers()),
-      {:ok, res} <- Jason.decode(res) do
-        case res do
-          %{"status_code" => _, "message" => msg} -> {:error, msg}
-          _ -> {:ok, res}
-        end
+         {:ok, res} <- Jason.decode(res) do
+      case res do
+        %{"status_code" => _, "message" => msg} -> {:error, msg}
+        _ -> {:ok, res}
+      end
     else
       {:error, msg} -> {:error, msg}
     end
   end
 
   def patch(route, data) do
-    with {:ok, data} <- Jason.encode(data),
-      {:ok, %Response{body: res}} <- HTTPoison.patch(route, data, headers()),
-      {:ok, res} <- Jason.decode(res) do
-        case res do
-          %{"status_code" => _, "message" => msg} -> {:error, msg}
-          _ -> {:ok, res}
-        end
+    with data <- URI.encode_query(data, :www_form),
+         {:ok, %Response{body: res}} <- HTTPoison.patch(route, data, headers(:www_form)),
+         {:ok, res} <- Jason.decode(res) do
+      case res do
+        %{"status_code" => _, "message" => msg} -> {:error, msg}
+        _ -> {:ok, res}
+      end
     else
       {:error, msg} -> {:error, msg}
     end
   end
 
   def download(route) do
-    with {:ok, %Response{body: res}} <- HTTPoison.get(route, headers(), [recv_timeout: 40000]) do
+    with {:ok, %Response{body: res}} <- HTTPoison.get(route, headers(), recv_timeout: 40000) do
       {:ok, res}
     else
       {:error, msg} -> {:error, msg}
@@ -120,6 +120,7 @@ defmodule Signaturit.Http do
   def endpoint(type, endpoint) when is_atom(type) and is_binary(endpoint) do
     base_url() <> Map.get(@endpoints, type, "") <> endpoint
   end
+
   def endpoint(), do: base_url()
 
   def base_url, do: Application.fetch_env!(:signaturit, :url)
@@ -127,12 +128,19 @@ defmodule Signaturit.Http do
   defp headers(content_type \\ :json) do
     [auth_header(), content_headers(content_type)]
   end
+
   defp content_headers(:json) do
-      {"accept", "application/json"}
+    {"content-type", "application/json"}
   end
+
   defp content_headers(:multipart) do
-      {"accept", "multipart/form-data"}
+    {"content-type", "multipart/form-data"}
   end
+
+  defp content_headers(:www_form) do
+    {"content-type", "application/x-www-form-urlencoded"}
+  end
+
   defp auth_header do
     {"Authorization", "Bearer " <> Application.fetch_env!(:signaturit, :api_key)}
   end

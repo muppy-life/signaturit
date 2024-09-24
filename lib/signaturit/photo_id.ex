@@ -6,8 +6,14 @@ defmodule Signaturit.PhotoId do
     endpoint = Http.endpoint(:photo_id, "/validate.json")
     front_file = [Utils.build_file(front, "front")]
     back_file = if not is_nil(back), do: Utils.build_file(back, "back"), else: []
-    body = front_file ++ back_file ++ [{"document_type", document_type}] ++ [{"document_country", document_country}]
+
+    body =
+      front_file ++
+        back_file ++
+        [{"document_type", document_type}] ++ [{"document_country", document_country}]
+
     res = Http.upload(endpoint, body)
+
     with {:ok, res} <- res do
       res
       |> Utils.keys_to_atoms()
