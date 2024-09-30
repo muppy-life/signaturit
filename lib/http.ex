@@ -118,7 +118,7 @@ defmodule Signaturit.Http do
   }
 
   def endpoint(type, endpoint) when is_atom(type) and is_binary(endpoint) do
-    base_url() <> Map.get(@endpoints, type, "") <> endpoint
+    "#{base_url()}#{Map.get(@endpoints, type, "")}#{endpoint}"
   end
 
   def endpoint(), do: base_url()
