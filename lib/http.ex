@@ -123,7 +123,7 @@ defmodule Signaturit.Http do
 
   def endpoint(), do: base_url()
 
-  def base_url, do: Application.fetch_env!(:signaturit, :url)
+  def base_url, do: Application.fetch_env!(:signaturit, :api_url)
 
   defp headers(content_type \\ :json) do
     [auth_header(), content_headers(content_type)]
