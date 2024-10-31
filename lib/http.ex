@@ -4,11 +4,18 @@ defmodule Signaturit.Http do
   def get(route) do
     with {:ok, %Response{body: res}} <- HTTPoison.get(route, headers()),
          {:ok, res} <- Jason.decode(res) do
-      {:ok, res}
+      case Map.get(res, "status_code") do
+        nil ->
+          {:ok, res}
+        status_code ->
+          message = Map.get(res, "message", "Unknown error")
+          {:error, "Status code: #{status_code}, Message: #{message}"}
+      end
     else
-      {:error, msg} -> {:error, msg}
+      {:error, reason} -> {:error, reason}
     end
   end
+
 
   def get(route, params) do
     params
